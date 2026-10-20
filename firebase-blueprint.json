@@ -1,0 +1,143 @@
+{
+  "entities": {
+    "SurveyResponse": {
+      "title": "SurveyResponse",
+      "description": "Submitted survey responses regarding Gen Z carbon surcharge perceptions",
+      "type": "object",
+      "properties": {
+        "clientSubmissionId": {
+          "type": "string",
+          "description": "Unique client submission ID for deduplication",
+          "maxLength": 100
+        },
+        "ageGroup": {
+          "type": "string",
+          "description": "Age group of the respondent",
+          "maxLength": 100
+        },
+        "traveledPastYear": {
+          "type": "string",
+          "description": "Whether respondent traveled in the past year",
+          "maxLength": 50
+        },
+        "carbonOffsetUnderstanding": {
+          "type": "string",
+          "description": "Level of carbon offset understanding",
+          "maxLength": 100
+        },
+        "trustFactor": {
+          "type": "string",
+          "description": "Primary factor creating trust",
+          "maxLength": 100
+        },
+        "willingnessToContribute": {
+          "type": "string",
+          "description": "Willingness to contribute to carbon surcharge",
+          "maxLength": 100
+        },
+        "biggestBarrier": {
+          "type": "string",
+          "description": "Biggest barrier perceived",
+          "maxLength": 100
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of survey submission"
+        }
+      },
+      "required": [
+        "ageGroup",
+        "traveledPastYear",
+        "carbonOffsetUnderstanding",
+        "trustFactor",
+        "willingnessToContribute",
+        "biggestBarrier",
+        "createdAt"
+      ]
+    },
+    "ContactMessage": {
+      "title": "ContactMessage",
+      "description": "Inquiry, feedback or paper request submitted by visitors",
+      "type": "object",
+      "properties": {
+        "clientSubmissionId": {
+          "type": "string",
+          "description": "Unique client submission ID for deduplication",
+          "maxLength": 100
+        },
+        "name": {
+          "type": "string",
+          "description": "Full name of the sender",
+          "minLength": 1,
+          "maxLength": 150
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the sender",
+          "minLength": 5,
+          "maxLength": 150
+        },
+        "university": {
+          "type": "string",
+          "description": "University or affiliation organization",
+          "maxLength": 200
+        },
+        "requestType": {
+          "type": "string",
+          "description": "Category of inquiry (full_paper, feedback, question)",
+          "enum": ["full_paper", "feedback", "question"],
+          "maxLength": 50
+        },
+        "note": {
+          "type": "string",
+          "description": "Detailed message or questions",
+          "maxLength": 3000
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of contact submission"
+        }
+      },
+      "required": ["name", "email", "requestType", "createdAt"]
+    },
+    "AdminRecord": {
+      "title": "AdminRecord",
+      "description": "Admin authorization entry",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "Email address of the admin",
+          "maxLength": 150
+        },
+        "role": {
+          "type": "string",
+          "description": "Admin role",
+          "enum": ["admin", "superadmin"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when admin role was granted"
+        }
+      },
+      "required": ["email", "role"]
+    }
+  },
+  "firestore": {
+    "/surveys/{surveyId}": {
+      "schema": "SurveyResponse",
+      "description": "Collection storing all respondent answers for the Gen Z carbon surcharge survey"
+    },
+    "/contacts/{contactId}": {
+      "schema": "ContactMessage",
+      "description": "Collection storing all contact, feedback and paper requests"
+    },
+    "/admins/{adminUid}": {
+      "schema": "AdminRecord",
+      "description": "Collection storing configured admin accounts by UID"
+    }
+  }
+}

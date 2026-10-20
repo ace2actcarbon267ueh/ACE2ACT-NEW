@@ -1,0 +1,6 @@
+{
+  "name": "Turning Persuasion into Participation - Gen Z Carbon Surcharge Research",
+  "description": "Website giới thiệu công trình nghiên cứu khoa học: Phản hồi của du khách Gen Z trước truyền thông về phụ phí carbon tại Việt Nam, khung tích hợp ELM x COM-B, thư viện kiến thức và bộ công cụ mô phỏng tương tác.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

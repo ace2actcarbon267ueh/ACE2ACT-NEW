@@ -1,0 +1,90 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        (request.auth.token.email == 'ace2act.carbon@gmail.com' && request.auth.token.email_verified == true) ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isValidSurvey(data) {
+      return data.keys().hasAll([
+        'ageGroup', 
+        'traveledPastYear', 
+        'carbonOffsetUnderstanding', 
+        'trustFactor', 
+        'willingnessToContribute', 
+        'biggestBarrier', 
+        'createdAt'
+      ]) &&
+      data.keys().hasOnly([
+        'ageGroup', 
+        'traveledPastYear', 
+        'carbonOffsetUnderstanding', 
+        'trustFactor', 
+        'willingnessToContribute', 
+        'biggestBarrier', 
+        'createdAt',
+        'clientSubmissionId'
+      ]) &&
+      data.ageGroup is string && data.ageGroup.size() <= 100 &&
+      data.traveledPastYear is string && data.traveledPastYear.size() <= 50 &&
+      data.carbonOffsetUnderstanding is string && data.carbonOffsetUnderstanding.size() <= 100 &&
+      data.trustFactor is string && data.trustFactor.size() <= 100 &&
+      data.willingnessToContribute is string && data.willingnessToContribute.size() <= 100 &&
+      data.biggestBarrier is string && data.biggestBarrier.size() <= 100 &&
+      (!('clientSubmissionId' in data) || (data.clientSubmissionId is string && data.clientSubmissionId.size() <= 100));
+    }
+
+    function isValidContact(data) {
+      return data.keys().hasAll(['name', 'email', 'requestType', 'createdAt']) &&
+      data.keys().hasOnly(['name', 'email', 'university', 'requestType', 'note', 'createdAt', 'clientSubmissionId']) &&
+      data.name is string && data.name.size() > 0 && data.name.size() <= 150 &&
+      data.email is string && data.email.size() >= 5 && data.email.size() <= 150 &&
+      (data.requestType in ['full_paper', 'feedback', 'question']) &&
+      (!('university' in data) || (data.university is string && data.university.size() <= 200)) &&
+      (!('note' in data) || (data.note is string && data.note.size() <= 3000)) &&
+      (!('clientSubmissionId' in data) || (data.clientSubmissionId is string && data.clientSubmissionId.size() <= 100));
+    }
+
+    // Surveys collection: Public can create valid submission, only admin can read
+    match /surveys/{surveyId} {
+      allow get, list: if isAdmin();
+      allow create: if isValidId(surveyId) && isValidSurvey(incoming()) && incoming().createdAt == request.time;
+      allow update, delete: if false;
+    }
+
+    // Contacts collection: Public can submit contact, only admin can read
+    match /contacts/{contactId} {
+      allow get, list: if isAdmin();
+      allow create: if isValidId(contactId) && isValidContact(incoming()) && incoming().createdAt == request.time;
+      allow update, delete: if false;
+    }
+
+    // Admin role configuration collection
+    match /admins/{adminUid} {
+      allow get: if isSignedIn() && (request.auth.uid == adminUid || isAdmin());
+      allow list: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+  }
+}
